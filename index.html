@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Matrix Birthday Message</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: #888;
+      font-family: monospace;
+      overflow: hidden;
+      height: 100%;
+    }
+    .matrix {
+      display: grid;
+      place-items: center;
+      height: 100vh;
+    }
+    pre {
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: pre;
+    }
+    .locked {
+      color: #00FF00;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="matrix">
+    <pre id="screen"></pre>
+  </div>
+
+  <script>
+    const rows = 25;
+    const cols = 60;
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+    const message = "HAPPY BIRTHDAY GUY!";
+    const msgRow = Math.floor(rows / 2);
+    const msgStartCol = Math.floor((cols - message.length) / 2);
+
+    let lockIndex = 0;
+    const lockedLetters = Array(message.length).fill(false);
+
+    function getRandomChar() {
+      return characters[Math.floor(Math.random() * characters.length)];
+    }
+
+    function drawMatrix() {
+      let html = "";
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const isMsgCol = r === msgRow &&
+            c >= msgStartCol &&
+            c < msgStartCol + message.length;
+
+          if (isMsgCol) {
+            const msgIdx = c - msgStartCol;
+            if (lockedLetters[msgIdx]) {
+              html += `<span class="locked">${message[msgIdx]}</span>`;
+            } else {
+              html += getRandomChar();
+            }
+          } else {
+            html += `<span>${getRandomChar()}</span>`;
+          }
+        }
+        html += "\n";
+      }
+
+      document.getElementById("screen").innerHTML = html;
+    }
+
+    function animateMessageLock() {
+      if (lockIndex < message.length) {
+        lockedLetters[lockIndex] = true;
+        lockIndex++;
+      } else {
+        clearInterval(lockTimer);
+      }
+    }
+
+    // Render the matrix continuously
+    setInterval(drawMatrix, 100);
+    // Slowly lock in message letters
+    const lockTimer = setInterval(animateMessageLock, 300);
+  </script>
+</body>
+</html>
