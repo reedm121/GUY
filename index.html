@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Matrix Birthday Cake</title>
+  <title>Birthday Message</title>
   <style>
     html, body {
       margin: 0;
@@ -19,10 +19,9 @@
       height: 100vh;
     }
     pre {
-      font-size: 14px;
+      font-size: 16px;
       line-height: 1.2;
       white-space: pre;
-      text-align: center;
     }
     .locked {
       color: #00FF00;
@@ -32,70 +31,63 @@
 </head>
 <body>
   <div class="matrix">
-    <pre id="cake"></pre>
+    <pre id="screen"></pre>
   </div>
 
   <script>
-    const flickerCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~|_\\/@! ";
+    const rows = 25;
+    const cols = 60;
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+    const message = "HAPPY BIRTHDAY GUY!";
+    const msgRow = Math.floor(rows / 2);
+    const msgStartCol = Math.floor((cols - message.length) / 2);
 
-    const cakeTemplate = [
-      "         0   0                    ",
-      "         |   |                    ",
-      "     ____|___|____                ",
-      "  0 | ~ ~ ~ ~ ~ ~ | 0             ",
-      "    |/\\/\\/\\/\\/\\/\\/\\|              ",
-      "  0 |     H a p p y   | 0         ",
-      "    |/\\/\\/\\/\\/\\/\\/\\|   |          ",
-      "__|__|_______________|__|__       ",
-      "|\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|      ",
-      "|       B i r t h d a y ! ! !     |",
-      "| ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ |",
-      "|_________________________________|"
-    ];
-
-    const rows = cakeTemplate.length;
-    const cols = Math.max(...cakeTemplate.map(line => line.length));
-    const totalChars = rows * cols;
-    const locked = Array(totalChars).fill(false);
-
-    const cakeEl = document.getElementById("cake");
+    let lockIndex = 0;
+    const lockedLetters = Array(message.length).fill(false);
 
     function getRandomChar() {
-      return flickerCharacters[Math.floor(Math.random() * flickerCharacters.length)];
+      return characters[Math.floor(Math.random() * characters.length)];
     }
 
-    function drawCake() {
-      let output = "";
-      for (let r = 0; r < rows; r++) {
-        const row = cakeTemplate[r].padEnd(cols, " ");
-        for (let c = 0; c < cols; c++) {
-          const idx = r * cols + c;
-          const targetChar = row[c];
+    function drawMatrix() {
+      let html = "";
 
-          const shouldLock = locked[idx] && targetChar !== " ";
-          if (shouldLock) {
-            output += `<span class="locked">${targetChar}</span>`;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const isMsgCol = r === msgRow &&
+            c >= msgStartCol &&
+            c < msgStartCol + message.length;
+
+          if (isMsgCol) {
+            const msgIdx = c - msgStartCol;
+            if (lockedLetters[msgIdx]) {
+              html += `<span class="locked">${message[msgIdx]}</span>`;
+            } else {
+              html += getRandomChar();
+            }
           } else {
-            output += getRandomChar();
+            html += `<span>${getRandomChar()}</span>`;
           }
         }
-        output += "\n";
+        html += "\n";
       }
-      cakeEl.innerHTML = output;
+
+      document.getElementById("screen").innerHTML = html;
     }
 
-    function lockNextChar() {
-      const idx = locked.findIndex((l, i) => !l && cakeTemplate[Math.floor(i / cols)]?.[i % cols] !== " ");
-      if (idx !== -1) {
-        locked[idx] = true;
+    function animateMessageLock() {
+      if (lockIndex < message.length) {
+        lockedLetters[lockIndex] = true;
+        lockIndex++;
       } else {
         clearInterval(lockTimer);
       }
     }
 
-    // Animate forever
-    setInterval(drawCake, 50);
-    const lockTimer = setInterval(lockNextChar, 20);
+    // Render the matrix continuously
+    setInterval(drawMatrix, 100);
+    // Slowly lock in message letters
+    const lockTimer = setInterval(animateMessageLock, 300);
   </script>
 </body>
 </html>
