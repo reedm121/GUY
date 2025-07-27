@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Matrix Birthday Message</title>
+  <title>Matrix Birthday Cake</title>
   <style>
     html, body {
       margin: 0;
@@ -19,9 +19,10 @@
       height: 100vh;
     }
     pre {
-      font-size: 16px;
+      font-size: 14px;
       line-height: 1.2;
       white-space: pre;
+      text-align: center;
     }
     .locked {
       color: #00FF00;
@@ -31,63 +32,91 @@
 </head>
 <body>
   <div class="matrix">
-    <pre id="screen"></pre>
+    <pre id="cake"></pre>
   </div>
 
   <script>
-    const rows = 25;
-    const cols = 60;
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
-    const message = "HAPPY BIRTHDAY GUY!";
-    const msgRow = Math.floor(rows / 2);
-    const msgStartCol = Math.floor((cols - message.length) / 2);
+    const cakeTemplate = [
+      "                0   0                 ",
+      "                |   |                 ",
+      "            ____|___|____             ",
+      "         0  |~ ~ ~ ~ ~ ~|   0         ",
+      "         |  |           |   |         ",
+      "      ___|__|___________|___|__       ",
+      "      |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|      ",
+      "  0   |                       |   0   ",
+      "  |   |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|   | ",
+      " _|___|_______________________|___|__ ",
+      "|/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|",
+      "|                                   |",
+      "|                                   |",
+      "| ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ |",
+      "|___________________________________|"
+    ];
 
-    let lockIndex = 0;
-    const lockedLetters = Array(message.length).fill(false);
+    const message = "HAPPY BIRTHDAY GUY!";
+    const messagePositions = [];
+
+    const rows = cakeTemplate.length;
+    const cols = cakeTemplate[0].length;
+
+    // Determine message placement row/col
+    const msgRow = 11;
+    const msgStartCol = Math.floor((cols - message.length) / 2);
+    for (let i = 0; i < message.length; i++) {
+      messagePositions.push({ row: msgRow, col: msgStartCol + i, char: message[i] });
+    }
+
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+    const cake = cakeTemplate.map(line => line.split(""));
+    const locked = Array(message.length).fill(false);
+
+    const cakeEl = document.getElementById("cake");
 
     function getRandomChar() {
       return characters[Math.floor(Math.random() * characters.length)];
     }
 
-    function drawMatrix() {
-      let html = "";
+    function drawCake() {
+      const output = [];
 
       for (let r = 0; r < rows; r++) {
+        let line = "";
         for (let c = 0; c < cols; c++) {
-          const isMsgCol = r === msgRow &&
-            c >= msgStartCol &&
-            c < msgStartCol + message.length;
-
-          if (isMsgCol) {
-            const msgIdx = c - msgStartCol;
-            if (lockedLetters[msgIdx]) {
-              html += `<span class="locked">${message[msgIdx]}</span>`;
+          const posIndex = messagePositions.findIndex(p => p.row === r && p.col === c);
+          if (posIndex !== -1) {
+            if (locked[posIndex]) {
+              line += `<span class="locked">${message[posIndex]}</span>`;
             } else {
-              html += getRandomChar();
+              line += getRandomChar();
             }
           } else {
-            html += `<span>${getRandomChar()}</span>`;
+            const original = cakeTemplate[r][c];
+            if (original === " ") {
+              line += " ";
+            } else {
+              line += Math.random() < 0.1 ? getRandomChar() : original;
+            }
           }
         }
-        html += "\n";
+        output.push(line);
       }
 
-      document.getElementById("screen").innerHTML = html;
+      cakeEl.innerHTML = output.join("\n");
     }
 
-    function animateMessageLock() {
-      if (lockIndex < message.length) {
-        lockedLetters[lockIndex] = true;
-        lockIndex++;
+    function lockNextChar() {
+      const nextIndex = locked.findIndex(l => l === false);
+      if (nextIndex !== -1) {
+        locked[nextIndex] = true;
       } else {
-        clearInterval(lockTimer);
+        clearInterval(lockInterval);
       }
     }
 
-    // Render the matrix continuously
-    setInterval(drawMatrix, 100);
-    // Slowly lock in message letters
-    const lockTimer = setInterval(animateMessageLock, 300);
+    // Animate flickering + locking
+    setInterval(drawCake, 100);
+    const lockInterval = setInterval(lockNextChar, 300);
   </script>
 </body>
 </html>
