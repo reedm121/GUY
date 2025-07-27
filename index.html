@@ -36,29 +36,25 @@
   </div>
 
   <script>
-    // Includes space now!
     const flickerCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~|_\\/@! ";
 
     const cakeTemplate = [
-      "                0   0                 ",
-      "                |   |                 ",
-      "            ____|___|____             ",
-      "         0  |~ ~ ~ ~ ~ ~|   0         ",
-      "         |  |           |   |         ",
-      "      ___|__|___________|___|__       ",
-      "      |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|      ",
-      "  0   |       H a p p y       |   0   ",
-      "  |   |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|   | ",
-      " _|___|_______________________|___|__ ",
-      "|/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|",
-      "|                                   |",
-      "|         B i r t h d a y! ! !      |",
-      "| ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ |",
-      "|___________________________________|"
+      "         0   0                    ",
+      "         |   |                    ",
+      "     ____|___|____                ",
+      "  0 | ~ ~ ~ ~ ~ ~ | 0             ",
+      "    |/\\/\\/\\/\\/\\/\\/\\|              ",
+      "  0 |     H a p p y   | 0         ",
+      "    |/\\/\\/\\/\\/\\/\\/\\|   |          ",
+      "__|__|_______________|__|__       ",
+      "|\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|      ",
+      "|       B i r t h d a y ! ! !     |",
+      "| ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ |",
+      "|_________________________________|"
     ];
 
     const rows = cakeTemplate.length;
-    const cols = cakeTemplate[0].length;
+    const cols = Math.max(...cakeTemplate.map(line => line.length));
     const totalChars = rows * cols;
     const locked = Array(totalChars).fill(false);
 
@@ -71,10 +67,13 @@
     function drawCake() {
       let output = "";
       for (let r = 0; r < rows; r++) {
+        const row = cakeTemplate[r].padEnd(cols, " ");
         for (let c = 0; c < cols; c++) {
           const idx = r * cols + c;
-          const targetChar = cakeTemplate[r][c];
-          if (locked[idx]) {
+          const targetChar = row[c];
+
+          const shouldLock = locked[idx] && targetChar !== " ";
+          if (shouldLock) {
             output += `<span class="locked">${targetChar}</span>`;
           } else {
             output += getRandomChar();
@@ -86,7 +85,7 @@
     }
 
     function lockNextChar() {
-      const idx = locked.findIndex(l => !l);
+      const idx = locked.findIndex((l, i) => !l && cakeTemplate[Math.floor(i / cols)]?.[i % cols] !== " ");
       if (idx !== -1) {
         locked[idx] = true;
       } else {
@@ -94,9 +93,9 @@
       }
     }
 
-    // Start animation
-    setInterval(drawCake, 50);         // Flicker update
-    const lockTimer = setInterval(lockNextChar, 20);  // Lock one at a time
+    // Animate forever
+    setInterval(drawCake, 50);
+    const lockTimer = setInterval(lockNextChar, 20);
   </script>
 </body>
 </html>
