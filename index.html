@@ -36,6 +36,9 @@
   </div>
 
   <script>
+    // Includes space now!
+    const flickerCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789~|_\\/@! ";
+
     const cakeTemplate = [
       "                0   0                 ",
       "                |   |                 ",
@@ -44,79 +47,56 @@
       "         |  |           |   |         ",
       "      ___|__|___________|___|__       ",
       "      |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|      ",
-      "  0   |                       |   0   ",
+      "  0   |       H a p p y       |   0   ",
       "  |   |/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|   | ",
       " _|___|_______________________|___|__ ",
       "|/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\|",
       "|                                   |",
-      "|                                   |",
+      "|         B i r t h d a y! ! !      |",
       "| ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ |",
       "|___________________________________|"
     ];
 
-    const message = "HAPPY BIRTHDAY GUY!";
-    const messagePositions = [];
-
     const rows = cakeTemplate.length;
     const cols = cakeTemplate[0].length;
-
-    // Determine message placement row/col
-    const msgRow = 11;
-    const msgStartCol = Math.floor((cols - message.length) / 2);
-    for (let i = 0; i < message.length; i++) {
-      messagePositions.push({ row: msgRow, col: msgStartCol + i, char: message[i] });
-    }
-
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
-    const cake = cakeTemplate.map(line => line.split(""));
-    const locked = Array(message.length).fill(false);
+    const totalChars = rows * cols;
+    const locked = Array(totalChars).fill(false);
 
     const cakeEl = document.getElementById("cake");
 
     function getRandomChar() {
-      return characters[Math.floor(Math.random() * characters.length)];
+      return flickerCharacters[Math.floor(Math.random() * flickerCharacters.length)];
     }
 
     function drawCake() {
-      const output = [];
-
+      let output = "";
       for (let r = 0; r < rows; r++) {
-        let line = "";
         for (let c = 0; c < cols; c++) {
-          const posIndex = messagePositions.findIndex(p => p.row === r && p.col === c);
-          if (posIndex !== -1) {
-            if (locked[posIndex]) {
-              line += `<span class="locked">${message[posIndex]}</span>`;
-            } else {
-              line += getRandomChar();
-            }
+          const idx = r * cols + c;
+          const targetChar = cakeTemplate[r][c];
+          if (locked[idx]) {
+            output += `<span class="locked">${targetChar}</span>`;
           } else {
-            const original = cakeTemplate[r][c];
-            if (original === " ") {
-              line += " ";
-            } else {
-              line += Math.random() < 0.1 ? getRandomChar() : original;
-            }
+            output += getRandomChar();
           }
         }
-        output.push(line);
+        output += "\n";
       }
-
-      cakeEl.innerHTML = output.join("\n");
+      cakeEl.innerHTML = output;
     }
 
     function lockNextChar() {
-      const nextIndex = locked.findIndex(l => l === false);
-      if (nextIndex !== -1) {
-        locked[nextIndex] = true;
+      const idx = locked.findIndex(l => !l);
+      if (idx !== -1) {
+        locked[idx] = true;
       } else {
-        clearInterval(lockInterval);
+        clearInterval(lockTimer);
       }
     }
 
-    // Animate flickering + locking
-    setInterval(drawCake, 100);
-    const lockInterval = setInterval(lockNextChar, 300);
+    // Start animation
+    setInterval(drawCake, 50);         // Flicker update
+    const lockTimer = setInterval(lockNextChar, 20);  // Lock one at a time
   </script>
 </body>
 </html>
